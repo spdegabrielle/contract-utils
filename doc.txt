@@ -1,0 +1,142 @@
+_Contract-utils_
+_contract-utils_
+_contract-utils.plt_
+
+Version 3.0
+Richard Cobbe
+<cobbe at ccs dot neu dot edu>
+
+This collection provides one file, _contract-utils.ss_, which implements
+several general-purpose contracts and contract utilities.
+
+ACKNOWLEDGMENTS: Thanks to Carl Eastlund for contract/c, flat-contract/c,
+contract-of, predicate-of, hash-fn/c, listof-unique/c,
+listof-unique-compare/c, equality/c, comparison/c.
+
+======================================================================
+
+I assume the following abstract data types provided by (lib "contract.ss"):
+    Contract
+    Flat-Contract
+
+We define the following derived types:
+
+    Pred-Contract ::= (@a -> Boolean)
+                    | Contract
+    Pred-Flat-Contract ::= (@a -> Boolean)
+                         | Flat-Contract
+
+> (nelistof/c flat-contract) : Pred-Flat-Contract -> Contract
+
+This function accepts a flat contract (or a predicate, which is converted
+to a flat contract) and produces a contract that recognizes non-empty lists
+whose elements match the given contract.
+
+> sexp/c : Flat-Contract
+
+This flat contract recognizes arbitrary S-expressions.  Here, an
+S-expression is either the empty list, a number, a symbol, a string, a
+Boolean, a character, or a cons cell containing two S-expressions.
+
+> predicate/c : Contract
+
+This contract recognizes (unary) predicate functions.  A predicate function
+is a function which can consume any single value and always produces a
+Boolean result.
+
+> binary-predicate/c : Contract
+
+This contract recognizes binary predicate functions, which are functions
+that consume any two values and always produce a Boolean result.
+
+> equality/c : Contract
+
+This contract recognizes binary equality predicate functions, which are
+functions that consume any two values and always produce a Boolean result.
+For now, binary-predicate/c and equality/c are equivalent, but in later
+releases, we may modify equality/c to check for additional properties of
+equivalence relations, like reflexivity.
+
+> comparison/c : Contract
+
+This contract recognizes SRFI-67-style comparison functions.  A comparison
+function is a function that takes any two values and returns one of 1, 0,
+or -1.  (Again, we may eventually extend this to check for other desirable
+properties, like order reflexivity and anti-symmetry.)
+
+> hash-fn/c : Contract
+
+This contract recognizes hash functions: functions that consume any single
+value and produce an integer.
+
+> (optional/c contract) : Contract -> Contract
+
+This function accepts a contract (or a predicate) and produces a contract
+that recognizes an optional value---that is, either a value that satisfies
+the given contract, or #f.  The resulting contract is flat if and only if
+the argument is a flat contract or predicate.
+
+> positive-int/c : Flat-Contract
+
+This flat contract recognizes strictly positive integers.
+
+> contract/c : Contract
+
+This contract recognizes contracts and predicates.
+
+> flat-contract/c : Contract
+
+This contract recognizes flat contracts and predicates.
+
+> (listof-unique/c elt=?) : (@a @a -> Boolean) -> Flat-Contract
+
+This function accepts a binary predicate and produces a contract that
+recognizes lists whose elements are unique according to elt=? .
+
+> (listof-unique-compare/c cmp) : (@a @a -> (Union 1 0 -1)) -> Flat-Contract
+
+This function accepts a comparison function, a la SRFI 67, and produces a
+contract that recognizes lists whose elements are unique according to cmp.
+
+> (contract-of contract-or-predicate) : Pred-Contract -> Contract
+
+This function wraps a predicate in a flat-contract and leaves contracts
+unchanged.
+
+> (predicate-of flat-contract-or-predicate) : Pred-Flat-Contract 
+                                            -> (@a -> Boolean)
+
+This function extracts a flat contract's predicate and leaves predicates
+unchanged.
+
+> (eta function)
+
+This macro simply eta-expands function; that is, it expands to 
+    (lambda args (apply function args)) .
+This is useful primarily to allow contract specifications to appear before
+their predicate definitions, for legibility reasons.
+
+======================================================================
+
+Contract-Utils: general-purpose PLT contract utilities.
+Copyright (C) 2005  Richard Cobbe
+
+This library is free software; you can redistribute it and/or modify it
+under the terms of the GNU Lesser General Public License as published by
+the Free Software Foundation; either version 2.1 of the License, or (at
+your option) any later version.
+
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this library; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+Clarification: I consider that simply using this library as a client, by
+specifying its PLaneT module path in a require clause, is "mere
+aggregation" according to the terms of the GNU LGPL, and therefore this
+usage does not constrain the terms of the license under which you release
+your client program.
